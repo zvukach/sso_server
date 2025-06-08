@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  app:
+    build: ./
+    container_name: sso-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/sso
+      - vendor:/var/www/sso/vendor
+    working_dir: /var/www/sso
+    command: sh /var/www/sso/start.sh
+    depends_on:
+      - db
+      - redis
+    networks:
+      - sso-network
+
+  db:
+    image: mysql:8.0
+    container_name: sso-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: sso_db
+      MYSQL_PASSWORD: password
+      MYSQL_USER: sso_user
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - sso-network
+
+  redis:
+    image: redis:alpine
+    container_name: sso-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - sso-network
+
+volumes:
+  db_data:
+  vendor:
+
+networks:
+  sso-network:
+    driver: bridge
