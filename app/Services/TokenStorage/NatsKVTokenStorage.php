@@ -45,43 +45,8 @@ final class NatsKVTokenStorage implements TokenStorageContract
 
 	public function getRefreshTokenUser(User $user): string
 	{
-		$refreshTTL = config('jwt.refresh_ttl');
-
-		$existingTokenKey = self::getExistingTokenKey($user);
-		$existingToken = $this->get($existingTokenKey);
-
-		if ($existingToken) {
-			$this->put(
-				$existingTokenKey,
-				'update_token',
-				[
-					'access_token' => $existingToken,
-					'expires_at' => now()->addDays(7)->timestamp,
-					'ttl' => $refreshTTL
-				]);
-			$this->put(
-				self::getRefreshTokenKey($existingToken),
-				'update_token',
-				[
-					'refresh_token' => $this->get(self::getRefreshTokenKey($existingToken)),
-					'expires_at' => now()->addDays(7)->timestamp,
-					'ttl' => $refreshTTL
-				]);
-
-			return $existingToken;
-		} else {
-			$refreshToken = Str::uuid()->toString();
-
-			$data = [
-				'user_id' => $user->id,
-				'expires_at' => now()->addDays(7)->timestamp,
-			];
-
-			$this->put(self::getRefreshTokenKey($refreshToken), 'create_token', $data);
-			$this->put($existingTokenKey, $refreshToken, $refreshTTL);
-
-			return $refreshToken;
-		}
+		// TODO
+		return '';
 	}
 
 	/**
@@ -162,9 +127,7 @@ final class NatsKVTokenStorage implements TokenStorageContract
 
 	private function put(string $key, string $eventName, array $data): void
 	{
-		$value = self::prepareMessageToTopic($eventName, $data);
-
-		$this->stream->put($key, $value);
+		//TODO;
 	}
 
 	private function exists(string $key): bool
