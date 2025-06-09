@@ -1,61 +1,137 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SSO-Server на Laravel
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Этот проект реализует SSO-сервер с использованием Laravel, JWT, Redis и Nats Jetstream. Предоставляет API для авторизации, регистрации, обновления токенов, OAuth2 через Google и отправки событий в Nats.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Установка и запуск
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Требования:
+- Docker
+- Docker Compose
+- Git
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Установка:
 
-## Learning Laravel
+```bash
+git clone <ваш-репозиторий>
+cd sso-server
+cp .env.example .env
+docker-compose up -d --build
+docker exec -it sso-app php artisan migrate
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Конфигураця:
+#### В .env укажите:
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:8000/api/auth/google/callback
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+NATS_SERVER=nats_server_ip
+NATS_PORT=4222
+NATS_NKEY=nats_nkey
+NATS_SUBJECT=some_sunject(topic)
+NATS_STREAM=some_stream
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## API Документация
 
-## Laravel Sponsors
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 1. Регистрация пользователя
+**POST** `/api/auth/register`
 
-### Premium Partners
+**Запрос**
+```json
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+```
+**Ответ**
+```json
+{
+  "token_type": "Bearer",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx",
+  "refresh_token": "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8",
+  "expires_in": 3600
+}
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 2. Авторизация пользователя
+**POST** `/api/auth/login`
 
-## Contributing
+**Запрос**
+```json
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+```
+**Ответ**
+```json
+{
+  "token_type": "Bearer",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx",
+  "refresh_token": "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8",
+  "expires_in": 3600
+}
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Обновление Access Token
+**POST** `/api/auth/refresh`
 
-## Code of Conduct
+**Запрос**
+```json
+{
+  "refresh_token": "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+}
+```
+**Ответ**
+```json
+{
+  "token_type": "Bearer",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx",
+  "expires_in": 3600
+}
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 4. Выход из системы
+**POST** `/api/auth/refresh`
 
-## Security Vulnerabilities
+**Заголовок**
+```header
+X-Refresh-Token: refresh_token
+```
+**Ответ**
+```json
+{
+  "message": "Successfully logged out"
+}
+```
+### 5. Авторизация через Google
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**GET** `/api/auth/google/redirect` — перенаправляет на Google. 
 
-## License
+**GET** `/api/auth/google/callback` — обрабатывает ответ от Google.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 6. Роут, с достпуом по токену.
+
+**GET** `/api/protected`
+
+**Заголовок**
+```header
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx
+```
+**Ответ**
+```json
+{
+    "message": "You are authenticated!",
+    "user": {
+        "id": 4,
+        "email": "test@test.ru",
+        "created_at": "2025-06-08T10:24:56.000000Z",
+        "updated_at": "2025-06-08T10:24:56.000000Z"
+    }
+}
+```

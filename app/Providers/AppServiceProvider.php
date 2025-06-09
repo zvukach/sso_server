@@ -2,13 +2,6 @@
 
 namespace App\Providers;
 
-use App\Contracts\Repositories\UserRepositoryContract;
-use App\Contracts\Services\AuthServiceContract as AuthServiceContract;
-use App\Contracts\Services\TokenStorageContract;
-use App\Models\User;
-use App\Repositories\UserRepository;
-use App\Services\AuthService;
-use App\Services\TokenStorage;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -18,7 +11,9 @@ class AppServiceProvider extends ServiceProvider
 	 */
 	public function register(): void
 	{
-		//
+		$this->app->bind(\App\Contracts\Repositories\User\UserRepositoryContract::class, function () {
+			return new \App\Repositories\UserRepository(new \App\Models\User());
+		});
 	}
 
 	/**
@@ -27,5 +22,24 @@ class AppServiceProvider extends ServiceProvider
 	public function boot(): void
 	{
 		//
+	}
+
+	public $bindings = [
+		\App\Contracts\Services\Auth\AuthServiceContract::class => \App\Services\Auth\AuthService::class,
+		\App\Contracts\Services\TokenStorage\TokenStorageContract::class => \App\Services\TokenStorage\RedisTokenStorage::class,
+//		\App\Contracts\Services\TokenStorage\TokenStorageContract::class => \App\Services\TokenStorage\NatsKVTokenStorage::class,
+		\App\Contracts\Services\Nats\NatsServiceContract::class => \App\Services\Nats\NatsService::class,
+		\App\Contracts\Services\Auth\GoogleAuthServiceContract::class => \App\Services\Auth\GoogleAuthService::class
+	];
+
+	public function provides(): array
+	{
+		return [
+			\App\Contracts\Services\Auth\AuthServiceContract::class,
+			\App\Contracts\Services\TokenStorage\TokenStorageContract::class,
+			\App\Contracts\Repositories\User\UserRepositoryContract::class,
+			\App\Contracts\Services\Nats\NatsServiceContract::class,
+			\App\Contracts\Services\Auth\GoogleAuthServiceContract::class
+		];
 	}
 }
