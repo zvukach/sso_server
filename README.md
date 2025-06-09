@@ -14,10 +14,10 @@
 ### Установка:
 
 ```bash
-git clone <ваш-репозиторий>
-cd sso-server
-cp .env.example .env
+git clone https://github.com/zvukach/sso_server.git
+cd sso_server
 docker-compose up -d --build
+docker exec -it sso-app composer install
 docker exec -it sso-app php artisan migrate
 ```
 
@@ -36,7 +36,7 @@ NATS_STREAM=some_stream
 ```
 
 ## API Документация
-
+Приложение запускается на 8000 порту: `http://0.0.0.0:8000`
 
 ### 1. Регистрация пользователя
 **POST** `/api/auth/register`
