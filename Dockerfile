@@ -8,6 +8,12 @@ RUN apt-get update && apt-get install -y \
     git \
     && docker-php-ext-install zip pdo_mysql
 
+# Установка pcntl (для работы с процессами)
+RUN docker-php-ext-install pcntl
+
+# Установка sockets (для RabbitMQ)
+RUN docker-php-ext-install sockets
+
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 

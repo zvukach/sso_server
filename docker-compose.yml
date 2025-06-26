@@ -14,6 +14,7 @@ services:
     depends_on:
       - db
       - redis
+      - rabbitmq
     networks:
       - sso-network
 
@@ -40,9 +41,39 @@ services:
     networks:
       - sso-network
 
+#  nats:
+#    image: nats:latest
+#    container_name: sso-nats
+#    ports:
+#      - "4222:4222"
+#      - "6222:6222"
+#      - "8222:8222"
+#    command: ["-js"]
+#    volumes:
+#      - nats_data:/opt/nats/data
+#    networks:
+#      - sso-network
+
+  rabbitmq:
+    image: rabbitmq:4.1.1-management
+    container_name: sso-rabbitmq
+    hostname: sso-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: secret
+    ports:
+      - "5672:5672"
+      - "15673:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - sso-network
+
 volumes:
   db_data:
   vendor:
+  rabbitmq_data:
+#  nats_data:
 
 networks:
   sso-network:
