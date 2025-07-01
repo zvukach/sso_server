@@ -26,6 +26,6 @@ class LoginRequest extends FormRequest
 
 	public function getDTO(): LoginDTO
 	{
-		return LoginDTO::fromArray($this->all());
+		return LoginDTO::fromArray($this->validated());
 	}
 }
