@@ -10,6 +10,7 @@
         "basis-company/nats": "^1.0",
         "google/apiclient": "^2.18",
         "laravel/framework": "^12.0",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "predis/predis": "^3.0",
         "stancl/tenancy": "^3.9",
@@ -74,7 +75,8 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
+        },
+        "process-timeout": 3600
     },
     "minimum-stability": "stable",
     "prefer-stable": true

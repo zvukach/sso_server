@@ -1,0 +1,16 @@
+{
+  "name": "websocket-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "socket.io": "^4.x",
+    "redis": "^4.x",
+    "@socket.io/redis-adapter": "^8.x",
+    "jsonwebtoken": "^9.x",
+    "@socket.io/admin-ui": "^0.5.1",
+    "http": "^0.0.1-security"
+  }
+}

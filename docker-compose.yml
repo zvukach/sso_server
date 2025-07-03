@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   app:
-    build: ./
+    build:
+      context: ./docker/php/
+      dockerfile: ./Dockerfile
     container_name: sso-app
     ports:
       - "8000:8000"
@@ -16,7 +18,7 @@ services:
       - redis
       - rabbitmq
     networks:
-      - sso-network
+      - network_1
 
   db:
     image: mysql:8.0
@@ -31,7 +33,7 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - sso-network
+      - network_1
 
   redis:
     image: redis:alpine
@@ -39,20 +41,8 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - sso-network
-
-#  nats:
-#    image: nats:latest
-#    container_name: sso-nats
-#    ports:
-#      - "4222:4222"
-#      - "6222:6222"
-#      - "8222:8222"
-#    command: ["-js"]
-#    volumes:
-#      - nats_data:/opt/nats/data
-#    networks:
-#      - sso-network
+      - network_1
+    restart: unless-stopped
 
   rabbitmq:
     image: rabbitmq:4.1.1-management
@@ -67,14 +57,41 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
-      - sso-network
+      - network_1
+
+  websocket:
+    build:
+      context: ./docker/socket/
+      dockerfile: ./Dockerfile
+    container_name: websockets
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    restart: unless-stopped
+    networks:
+      - network_1
+
+#  nginx:
+#   image: nginx:alpine
+#   container_name: ws-proxy
+#   ports:
+#     - "443:443"
+#     - "80:80"
+#   volumes:
+#     - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+#     - ./docker/nginx/certs:/etc/nginx/certs
+#   depends_on:
+#     - websocket
+#   restart: unless-stopped
 
 volumes:
   db_data:
   vendor:
   rabbitmq_data:
-#  nats_data:
 
 networks:
-  sso-network:
+  network_1:
     driver: bridge
